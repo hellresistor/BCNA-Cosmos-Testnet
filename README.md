@@ -23,9 +23,9 @@ ToDO:
  - Ubuntu Server 20.04
 
 # Run as normal User (NOT ROOT):
-    git clone https://github.com/hellresistor/Bitcanna-Cosmos-Testnet.git
-    chmod -R 700 Bitcanna-Cosmos-Testnet
-    bash "$PWD"/Bitcanna-Cosmos-Testnet/BCNA-Cosmos-Install.sh.sh
+    git clone https://github.com/hellresistor/BCNA-Cosmos-Testnet.git
+    chmod -R +x BCNA-Cosmos-Testnet
+    bash "$PWD"/BCNA-Cosmos-Testnet/BCNA-Cosmos-Install.sh
 
 
 # Support donating:
