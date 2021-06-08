@@ -22,16 +22,16 @@ else
  fi
 fi
 
-if [[ "$NODETYPE" == "V" && "$NODETYPE" == "v" ]]; then
- ok "Validator Mode choosen"
-elif [[ "$NODETYPE" == "D" && "$NODETYPE" == "d" ]]; then
- ok "Delegator Mode choosen"
-elif [[ -z "$NODETYPE" ]]; then
- warn "You need Set your Bitcanna-Cosmos wallet mode: Validator/Delegator"
- erro "Please, Read the ReadMe.md file"
-else
- erro "Set correct the NODETYPE variable on CONFIG file"
-fi
+#if [[ "$NODETYPE" == "V" && "$NODETYPE" == "v" ]]; then
+# ok "Validator Mode choosen"
+#elif [[ "$NODETYPE" == "D" && "$NODETYPE" == "d" ]]; then
+# ok "Delegator Mode choosen"
+#elif [[ -z "$NODETYPE" ]]; then
+# warn "You need Set your Bitcanna-Cosmos wallet mode: Validator/Delegator"
+# erro "Please, Read the ReadMe.md file"
+#else
+# erro "Set correct the NODETYPE variable on CONFIG file"
+#fi
 
 info "Checking System Compatibility..."
 ## CPU Cores Checking...
