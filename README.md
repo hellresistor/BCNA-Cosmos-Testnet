@@ -24,8 +24,8 @@ ToDO:
 
 # Run as normal User (NOT ROOT):
     git clone https://github.com/hellresistor/BCNA-Cosmos-Testnet.git
-    chmod -R +x BCNA-Cosmos-Testnet
-    bash "$PWD"/BCNA-Cosmos-Testnet/BCNA-Cosmos-Install.sh
+    chmod -R +x BCNA-Cosmos-Testnet && cd "$PWD"/BCNA-Cosmos-Testnet
+    bash BCNA-Cosmos-Install.sh
 
 
 # Support donating:
