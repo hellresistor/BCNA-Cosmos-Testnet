@@ -5,7 +5,7 @@
 #                                                   #   
 #---------------------------------------------------#
 #---------------------------------------------------#
-#                  Version: V0.60                   #
+#                  Version: V0.62                   #
 #             Donate BitCanna Address:              #
 #    --> B73RRFVtndfPRNSgSQg34yqz4e9eWyKRSv <--     #
 #---------------------------------------------------#
@@ -139,14 +139,14 @@ if cp /tmp/genesis.json "$BCNACONF"/genesis.json > /dev/null 2>&1 ; then
 else 
  warn "genesis.json file NOT moved to $BCNAUSERHOME/$BCNACONF/genesis.json"
 fi
-info "Setting DDOS Protection (Sentry Nodes)"
 sed -E -i "s/seeds = \".*\"/seeds = \"SEEDS\"/" "$BCNACONF"/config.toml
 sed -E -i "s/persistent_peers = \".*\"/persistent_peers = \"$PERSISTPEERS\"/" "$BCNACONF"/config.toml
 sed -E -i "s/minimum-gas-prices = \".*\"/minimum-gas-prices = \"0.01ubcna\"/" "$BCNACONF"/app.toml
+#info "Setting DDOS Protection (Sentry Nodes)"
 # sed -i "s/private_peer_ids = \"\"/private_peer_ids = \"$PRIVATPEERID\"/" "$BCNACONF"/config.toml
 # sed -i "s/pex = true/pex = false/" "$BCNACONF"/config.toml
 if sudo ufw allow "$BCNAPORT" ; then
- ok "Firewall configured"
+ ok "Firewall configured on port: $BCNAPORT"
 else 
  warn "Firewall not configured. Do a manual check."
 fi
@@ -237,11 +237,31 @@ case "$choicsettingadvance" in
  *) warn "Wrong key" ;;
 esac 
 done
+while true
+do
+info " You want delegate ?! (Y|n)"
+read -r choicdeleg
+case "$choicdeleg" in
+ y|Y) delegatecoins && break ;;
+ n|N) warn "NOT Delegating coins" && break ;;
+ *) warn "Wrong key" ;;
+esac 
+done
 }
 
 function validator(){
-"$BCNAD" tx staking create-validator \
---amount 1000000ubcna \
+while [[ "$amountdelegate" != ^[0-9]+$ ]]; do
+ info "How much ubcna you want delegate to validator? (1000000ubcna = 1 BCNA): [1000000]:"
+ read amountdelegate
+ amountdelegate=${amountdelegate:-1000000}
+ if [[ "$amountdelegate" =~ ^[0-9]+$ ]]; then
+  ok "Valid amount: $amountdelegate ubcna"
+ else
+  warn "Just Numbers Valid"
+ fi
+done
+if "$BCNAD" tx staking create-validator \
+--amount "$amountdelegate"ubcna \
 --commission-max-change-rate 0.10 \
 --commission-max-rate 0.2 \
 --commission-rate 0.1 \
@@ -249,23 +269,38 @@ function validator(){
 --min-self-delegation 1 \
 --moniker "$MONIKER" \
 --pubkey "$($BCNAD tendermint show-validator)" \
---chain-id bitcanna-testnet-2 \
+--chain-id "$CHAINID" \
 --gas auto \
 --gas-adjustment 1.5 \
---gas-prices 0.01ubcna
+--gas-prices 0.01ubcna >> "$BCNAUSERHOME"/BCNABACKUP/createvalidator.extract ; then
+ok "Validator Created"
+else
+ warn "Some problem creating Validator. Check it Manually"
+fi
 
-"$BCNAD" query staking validators --output json| jq
+if "$BCNAD" query staking validators --output json | jq >> "$BCNAUSERHOME"/BCNABACKUP/querystakevalidator.extract ; then
+ ok "Query staking validators saved on $BCNAUSERHOME/BCNABACKUP/querystakevalidator.extract"
+else
+ warn "Cannot Query staking validators. Do it Manually"
+fi
 }
 
 function prometheus() {
 sed -i "s/prometheus = \".*\"/prometheus = true/" "$BCNACONF"/config.toml || erro "Cannot Enable Prometheus"
 sed -i "s/prometheus_listen_addr = \".*\"/prometheus_listen_addr = \"0.0.0.0:26660\"/" "$BCNACONF"/config.toml || erro "Cannot Listen Address Prometheus"
-sudo service "$BCNAD" restart
+sudo service "$BCNAD" restart || warn "Unable Restart Bitcanna by service. Check it Manually."
 if sudo ufw allow from 167.172.43.16 proto tcp to any port 26660 ; then
  ok "UFW rule added to Prometheus analytics"
 else
  erro "UFW rule NOT added to Prometheus analytics"
 fi
+}
+
+function delegatecoins(){
+info " Check my friend @atmon3r repository on GitHub and get the code"
+info " https://github.com/atmoner/cosmos-tool.git"
+info " Use and improove :)"
+read -n 1 -s -r -p "$(info "Press any key to continue...")"
 }
 
 ###############
