@@ -24,10 +24,9 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-        env:
-          SHELLCHECK_OPTS: -e SC2034
 
       # Runs a single command using the runners shell
       - name: Shell Linter
         uses: azohra/shell-linter@v0.5.0
-        
+        env:
+          SHELLCHECK_OPTS: -e SC2034
