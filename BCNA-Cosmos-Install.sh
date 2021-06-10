@@ -306,7 +306,11 @@ read -n 1 -s -r -p "$(info "Press any key to continue...")"
 ###############
 ###  Start  ###
 ###############
-intro && sleep 2
+intro && sleep 5
+if [ -z "$MONIKER" ]; then
+ erro "Set MONIKER on CONFIG file ..."
+fi
+ 
 if bash CheckSystem.sh ; then
  true
 else
