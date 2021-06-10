@@ -252,7 +252,7 @@ done
 function validator(){
 while [[ "$amountdelegate" != ^[0-9]+$ ]]; do
  info "How much ubcna you want delegate to validator? (1000000ubcna = 1 BCNA): [1000000]:"
- read amountdelegate
+ read -r amountdelegate
  amountdelegate=${amountdelegate:-1000000}
  if [[ "$amountdelegate" =~ ^[0-9]+$ ]]; then
   ok "Valid amount: $amountdelegate ubcna"
