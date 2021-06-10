@@ -13,7 +13,7 @@ ToDO:
  - Stage 2 - Soon ...
  - Soon ...
 
-# STATUS: *V0.64*
+# STATUS: *V0.65*
  - BCNA-Cosmos-Install.sh -> Script to Install/Upgrade/Remove Bitcanna-Cosmos Wallet
  - CONFIG -> Place with variables
  - CheckRequisites.sh -> Script to install needed packages to run wallet

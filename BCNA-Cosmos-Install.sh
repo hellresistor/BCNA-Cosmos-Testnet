@@ -5,7 +5,7 @@
 #                                                   #   
 #---------------------------------------------------#
 #---------------------------------------------------#
-#                  Version: V0.64                   #
+#                  Version: V0.65                   #
 #             Donate BitCanna Address:              #
 #    --> B73RRFVtndfPRNSgSQg34yqz4e9eWyKRSv <--     #
 #---------------------------------------------------#
@@ -110,31 +110,108 @@ sudo rm -r /tmp/*  > /dev/null 2>&1 && ok "/tmp folder cleaned"
 }
 
 function SettingConnection(){
-WALLETPASS="dummy1"
-WALLETPASSS="dummy2"
-while [ "$WALLETPASS" != "$WALLETPASSS" ]
+while true
 do
- info "Set PassPhrase: " && read -rsp "" WALLETPASS
- warn "Repeat PassPhrase: " && read -rsp "" WALLETPASSS
+info "Choose method to recover your wallet:
+\n\t K - by PrivKey file 
+\n\t S - by Seed 
+\n\t C - Create New Wallet"
+read -r recwallet
+case "$recwallet" in
+    k|K) info "Set Your *.key file [keyfile_wallet_resources.key]:"
+		 read -r keyfile
+		 keyfile=${keyfile:-keyfile_wallet_resources.key}
+		 info "Detecting $keyfile file..."
+		 sleep 0.5
+	     while [ ! -f "$BCNAUSERHOME"/"$keyfile" ]
+         do		 
+		  warn "$keyfile not found...\n Please, put $keyfile on this directory: $BCNAUSERHOME/$keyfile"
+		  read -n 1 -s -r -p "$(info "Press any key to continue ... ")"
+         done
+         ok "$keyfile FOUND in $BCNAUSERHOME Directory..."
+		 "$BCNAD" keys import "$WALLETNAME" "$keyfile"
+		 sleep 0.5
+         # WALLETEXIST=1
+         break ;;
+    s|S) info "Put your Wallet Name to Recovery :"
+	     read -r WALLETNAME
+		 "$BCNAD" keys add "$WALLETNAME" --recover
+         # WALLETEXIST=0
+	     break ;;
+	c|C) info "Creating New Wallet"
+	     WALLETPASS="dummy1"
+		 WALLETPASSS="dummy2"
+		 while [ "$WALLETPASS" != "$WALLETPASSS" ]
+		 do
+		  info "Set PassPhrase: " && read -rsp "" WALLETPASS
+		  warn "Repeat PassPhrase: " && read -rsp "" WALLETPASSS
+		 done
+		 if echo -e "${WALLETPASS}\\n${WALLETPASSS}" | "$BCNAD" keys add "$WALLETNAME" |& tee -a "$BCNAUSERHOME"/BCNABACKUP/"$WALLETNAME".walletinfo; then 
+		  ok "Wallet: $WALLETNAME created sucefully"
+		  if [[ -f "$BCNAUSERHOME"/BCNABACKUP/"$WALLETNAME".walletinfo ]] ; then
+		   echo "Passphrase : $WALLETPASS" >> "$BCNAUSERHOME"/BCNABACKUP/"$WALLETNAME".walletinfo
+	 	   cat "$BCNAUSERHOME"/BCNABACKUP/"$WALLETNAME".walletinfo
+		   MYWALLETADDR=$(sed -n -e 's/.*address: //p' "$BCNAUSERHOME"/BCNABACKUP/"$WALLETNAME".walletinfo)
+	 	   sleep 5
+		  else
+		   erro "$BCNAUSERHOME/BCNABACKUP/$WALLETNAME.walletinfo NOT FOUND"
+		  fi
+		 else 
+		  erro "Wallet: $WALLETNAME NOT created"
+		 fi 
+		 break ;;
+    *) warn "Missed key" ;;
+esac
 done
-if echo -e "${WALLETPASS}\\n${WALLETPASSS}" | "$BCNAD" keys add "$WALLETNAME" |& tee -a "$BCNAUSERHOME"/BCNABACKUP/"$WALLETNAME".walletinfo; then 
- ok "Wallet: $WALLETNAME created sucefully"
- if [[ -f "$BCNAUSERHOME"/BCNABACKUP/"$WALLETNAME".walletinfo ]] ; then
-  echo "Passphrase : $WALLETPASS" >> "$BCNAUSERHOME"/BCNABACKUP/"$WALLETNAME".walletinfo
-  cat "$BCNAUSERHOME"/BCNABACKUP/"$WALLETNAME".walletinfo
-  MYWALLETADDR=$(sed -n -e 's/.*address: //p' "$BCNAUSERHOME"/BCNABACKUP/"$WALLETNAME".walletinfo)
-  sleep 5
- else
-  erro "$BCNAUSERHOME/BCNABACKUP/$WALLETNAME.walletinfo NOT FOUND"
- fi
-else 
- erro "Moniker: $MONIKER NOT created"
-fi
-if "$BCNAD" init "$MONIKER" --chain-id "$CHAINID" |& tee -a "$BCNAUSERHOME"/BCNABACKUP/"$MONIKER".moniker.info ; then 
- ok "Folders Initialized"
-else
- erro "Impossible Initialize Folders"
-fi
+while true
+do
+info "Choose method to recover your Validator:
+\n\t J - by *.tar.gz  
+\n\t G - by *.tar.gz.gpg (GPG Encryption method) 
+\n\t C - Create New Moniker"
+read -r recwallet
+case "$recwallet" in
+    j|J) info "Set Your *.tar.gz file [validator_key.tar.gz]:"
+		 read -r keyfile
+		 keyfile=${keyfile:-validator_key.tar.gz}
+		 info "Detecting $keyfile file..."
+		 sleep 0.5
+	     while [ ! -f "$BCNAUSERHOME"/"$keyfile" ]
+         do		 
+		  warn "$keyfile not found...\n Please, put $keyfile on this directory: $BCNAUSERHOME/$keyfile"
+		  read -n 1 -s -r -p "$(info "Press any key to continue ... ")"
+         done
+         ok "$keyfile FOUND in $BCNAUSERHOME Directory..."
+		 tar xzvf "$BCNAUSERHOME"/"$keyfile" -C "$BCNACONF"
+		 sleep 0.5
+         # WALLETEXIST=1
+         break ;;
+    g|G) info "Set Your *.tar.gz.gpg GPG Encrypted file [validator_key.tar.gz.gpg]:"
+		 read -r keyfile
+		 keyfile=${keyfile:-validator_key.tar.gz.gpg}
+		 info "Detecting $keyfile file..."
+		 sleep 0.5
+	     while [ ! -f "$BCNAUSERHOME"/"$keyfile" ]
+         do		 
+		  warn "$keyfile not found...\n Please, put $keyfile on this directory: $BCNAUSERHOME/$keyfile"
+		  read -n 1 -s -r -p "$(info "Press any key to continue ... ")"
+         done
+         ok "$keyfile FOUND in $BCNAUSERHOME Directory..."
+		 gpg -d "$BCNAUSERHOME"/"$keyfile" | tar xzvf - -C "$BCNACONF"
+		 sleep 0.5
+         # WALLETEXIST=1
+         break ;;
+	c|C) info "Creating New MONIKER" 
+		 if "$BCNAD" init "$MONIKER" --chain-id "$CHAINID" |& tee -a "$BCNAUSERHOME"/BCNABACKUP/"$MONIKER".moniker.info ; then 
+		  ok "Folders Initialized"
+		 else
+		  erro "Impossible Initialize Folders"
+		 fi
+		 break ;;
+    *) warn "Missed key" ;;
+esac
+done
+
 if cp /tmp/genesis.json "$BCNACONF"/genesis.json > /dev/null 2>&1 ; then
  ok "genesis.json file moved to $BCNAUSERHOME/$BCNACONF/genesis.json"
 else 
@@ -320,101 +397,6 @@ info " Check my friend @atmon3r repository on GitHub and get the code"
 info " https://github.com/atmoner/cosmos-tool.git"
 info " Use and improove :)"
 read -n 1 -s -r -p "$(info "Press any key to continue...")"
-}
-
-function recoveryzone(){
-while true
-do
-info "What you want recover?:
-\n\t W - Wallet 
-\n\t V - Validator 
-\n\t N - NOT Recover. Create a NEW wallet"
-read -r reczone
-case "$reczone" in
-	w|W) walletrec ;; #		break ;;
-	v|V) validatorec ;; #		break ;;
-	n|N) info "Creating a NEW Wallet" && break ;;
-	*) warn "Missed key" ;;
-esac
-done
-}
-function walletrec(){
-while true
-do
-info "Choose method to recover your wallet:
-\n\t K - by PrivKey file 
-\n\t S - by Seed 
-\n\t N - NOT Recover"
-read -r recwallet
-case "$recwallet" in
-    k|K) info "Set Your *.key file [keyfile_wallet_resources.key]:"
-		 read -r keyfile
-		 keyfile=${keyfile:-keyfile_wallet_resources.key}
-		 info "Detecting $keyfile file..."
-		 sleep 0.5
-	     while [ ! -f "$BCNAUSERHOME"/"$keyfile" ]
-         do		 
-		  warn "$keyfile not found...\n Please, put $keyfile on this directory: $BCNAUSERHOME/$keyfile"
-		  read -n 1 -s -r -p "$(info "Press any key to continue ... ")"
-         done
-         ok "$keyfile FOUND in $BCNAUSERHOME Directory..."
-		 "$BCNAD" keys import "$WALLETNAME" "$keyfile"
-		 sleep 0.5
-         # WALLETEXIST=1
-         break ;;
-    s|S) info "Put your Wallet Name to Recovery :"
-	     read -r WALLETNAME
-		 "$BCNAD" keys add "$WALLETNAME" --recover
-         # WALLETEXIST=0
-	     break ;;
-	n|N) info "Not Recovery" && break ;;
-    *) warn "Missed key" ;;
-esac
-done
-}
-function validatorec(){
-while true
-do
-info "Choose method to recover your Validator:
-\n\t J - by *.tar.gz  
-\n\t G - by *.tar.gz.gpg (GPG Encryption method) 
-\n\t N - NOT Recover"
-read -r recwallet
-case "$recwallet" in
-    j|J) info "Set Your *.tar.gz file [validator_key.tar.gz]:"
-		 read -r keyfile
-		 keyfile=${keyfile:-validator_key.tar.gz}
-		 info "Detecting $keyfile file..."
-		 sleep 0.5
-	     while [ ! -f "$BCNAUSERHOME"/"$keyfile" ]
-         do		 
-		  warn "$keyfile not found...\n Please, put $keyfile on this directory: $BCNAUSERHOME/$keyfile"
-		  read -n 1 -s -r -p "$(info "Press any key to continue ... ")"
-         done
-         ok "$keyfile FOUND in $BCNAUSERHOME Directory..."
-		 tar xzvf "$BCNAUSERHOME"/"$keyfile" -C "$BCNACONF"
-		 sleep 0.5
-         # WALLETEXIST=1
-         break ;;
-    g|G) info "Set Your *.tar.gz.gpg GPG Encrypted file [validator_key.tar.gz.gpg]:"
-		 read -r keyfile
-		 keyfile=${keyfile:-validator_key.tar.gz.gpg}
-		 info "Detecting $keyfile file..."
-		 sleep 0.5
-	     while [ ! -f "$BCNAUSERHOME"/"$keyfile" ]
-         do		 
-		  warn "$keyfile not found...\n Please, put $keyfile on this directory: $BCNAUSERHOME/$keyfile"
-		  read -n 1 -s -r -p "$(info "Press any key to continue ... ")"
-         done
-         ok "$keyfile FOUND in $BCNAUSERHOME Directory..."
-		 gpg -d "$BCNAUSERHOME"/"$keyfile" | tar xzvf - -C "$BCNACONF"
-		 sleep 0.5
-         # WALLETEXIST=1
-         break ;;
-	n|N) info "Not Recovery" && break ;;
-    *) warn "Missed key" ;;
-esac
-done
 }
 
 ###############
