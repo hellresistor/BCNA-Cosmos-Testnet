@@ -5,7 +5,7 @@
 #                                                   #   
 #---------------------------------------------------#
 #---------------------------------------------------#
-#                  Version: V0.62                   #
+#                  Version: V0.63                   #
 #             Donate BitCanna Address:              #
 #    --> B73RRFVtndfPRNSgSQg34yqz4e9eWyKRSv <--     #
 #---------------------------------------------------#
@@ -22,7 +22,7 @@ else
  warn "Not Exist a Old $BCNADIR to be backeuped"
 fi
 if wget "$BCNACOSMOSLINK" -P /tmp > /dev/null 2>&1 ; then 
- /tmp/"$BCNAD" version
+ sudo chmod +x /tmp/"$BCNAD" && /tmp/"$BCNAD" version || erro "Cannot check bcna version"
  sleep 2
  ok "Latest Bitcanna-Cosmos Downloaded"
 else
@@ -38,7 +38,7 @@ if wget "$GENESISLINK" -P /tmp > /dev/null 2>&1 ; then
 else 
  erro "Download genesis.json failed"
 fi
-if sudo cp /tmp/"$BCNAD" /usr/local/bin/"$BCNAD" > /dev/null 2>&1 && sudo chmod +x /usr/local/bin/"$BCNAD" > /dev/null 2>&1 ; then 
+if sudo cp -p /tmp/"$BCNAD" /usr/local/bin/"$BCNAD" > /dev/null 2>&1 && sudo chmod +x /usr/local/bin/"$BCNAD" > /dev/null 2>&1 ; then 
  ok "Binaries in place /usr/local/bin/$BCNAD"
 else
  warn "Cannot set binary file $BCNAD on dir /usr/bin"
@@ -55,7 +55,7 @@ EOF
 }
 
 function checkin(){
-sleep 0.5
+intro
 info "Welcome!\nChoose:\n(I)nstall , (U)pdate , (R)emove :"
 read -r choix
 if [ "$choix" == "i" ] || [ "$choix" == "I" ]; then 
@@ -116,20 +116,20 @@ do
  info "Set PassPhrase: " && read -rsp "" WALLETPASS
  warn "Repeat PassPhrase: " && read -rsp "" WALLETPASSS
 done
-if echo -e "${WALLETPASS}\\n${WALLETPASSS}" | "$BCNAD" keys add "$MONIKER" > "$BCNAUSERHOME"/BCNABACKUP/"$MONIKER".walletinfo; then 
- ok "Moniker: $MONIKER created sucefully"
- if [ -d "$BCNAUSERHOME"/BCNABACKUP/"$MONIKER".walletinfo ] ; then
-  echo "Passphrase : $WALLETPASS" >> "$BCNAUSERHOME"/BCNABACKUP/"$MONIKER".walletinfo
-  cat "$BCNAUSERHOME"/BCNABACKUP/"$MONIKER".walletinfo
-  MYWALLETADDR=$(sed -n -e 's/.*address: //p' "$BCNAUSERHOME"/BCNABACKUP/"$MONIKER".walletinfo)
+if echo -e "${WALLETPASS}\\n${WALLETPASSS}" | "$BCNAD" keys add "$WALLETNAME" |& tee -a "$BCNAUSERHOME"/BCNABACKUP/"$WALLETNAME".walletinfo; then 
+ ok "Wallet: $WALLETNAME created sucefully"
+ if [[ -f "$BCNAUSERHOME"/BCNABACKUP/"$WALLETNAME".walletinfo ]] ; then
+  echo "Passphrase : $WALLETPASS" >> "$BCNAUSERHOME"/BCNABACKUP/"$WALLETNAME".walletinfo
+  cat "$BCNAUSERHOME"/BCNABACKUP/"$WALLETNAME".walletinfo
+  MYWALLETADDR=$(sed -n -e 's/.*address: //p' "$BCNAUSERHOME"/BCNABACKUP/"$WALLETNAME".walletinfo)
   sleep 5
  else
-  erro "$BCNAUSERHOME/BCNABACKUP/$MONIKER.walletinfo NOT FOUND"
+  erro "$BCNAUSERHOME/BCNABACKUP/$WALLETNAME.walletinfo NOT FOUND"
  fi
 else 
  erro "Moniker: $MONIKER NOT created"
 fi
-if "$BCNAD" init "$MONIKER" --chain-id "$CHAINID" ; then 
+if "$BCNAD" init "$MONIKER" --chain-id "$CHAINID" |& tee -a "$BCNAUSERHOME"/BCNABACKUP/"$MONIKER".moniker.info ; then 
  ok "Folders Initialized"
 else
  erro "Impossible Initialize Folders"
@@ -137,9 +137,9 @@ fi
 if cp /tmp/genesis.json "$BCNACONF"/genesis.json > /dev/null 2>&1 ; then
  ok "genesis.json file moved to $BCNAUSERHOME/$BCNACONF/genesis.json"
 else 
- warn "genesis.json file NOT moved to $BCNAUSERHOME/$BCNACONF/genesis.json"
+ erro "genesis.json file NOT moved to $BCNAUSERHOME/$BCNACONF/genesis.json"
 fi
-sed -E -i "s/seeds = \".*\"/seeds = \"SEEDS\"/" "$BCNACONF"/config.toml
+sed -E -i "s/seeds = \".*\"/seeds = \"$SEEDS\"/" "$BCNACONF"/config.toml
 sed -E -i "s/persistent_peers = \".*\"/persistent_peers = \"$PERSISTPEERS\"/" "$BCNACONF"/config.toml
 sed -E -i "s/minimum-gas-prices = \".*\"/minimum-gas-prices = \"0.01ubcna\"/" "$BCNACONF"/app.toml
 #info "Setting DDOS Protection (Sentry Nodes)"
@@ -150,7 +150,16 @@ if sudo ufw allow "$BCNAPORT" ; then
 else 
  warn "Firewall not configured. Do a manual check."
 fi
-echo "[Unit]
+
+if [[ -f "/lib/systemd/system/$BCNAD.service" ]] ; then
+ warn "$BCNAD.service Exist. Not created new one"
+ if sudo systemctl start "$BCNAD".service ; then 
+  ok "Bitcanna-Cosmos Service Started"
+ else 
+  erro "Problem Starting Bitcanna-Cosmos Service"
+ fi
+else
+ echo "[Unit]
 Description=BitCanna Node
 After=network-online.target
 [Service]
@@ -162,16 +171,17 @@ LimitNOFILE=4096
 [Install]
 WantedBy=multi-user.target
 " > /tmp/"$BCNAD".service
-if sudo mv /tmp/"$BCNAD".service /lib/systemd/system/ && sudo systemctl enable "$BCNAD".service ; then
- if sudo systemctl start "$BCNAD".service ; then 
-  ok "Bitcanna-Cosmos Service Started"
+ if sudo mv /tmp/"$BCNAD".service /lib/systemd/system/ && sudo systemctl enable "$BCNAD".service ; then
+  if sudo systemctl start "$BCNAD".service ; then 
+   ok "Bitcanna-Cosmos Service Started"
+  else 
+   erro "Problem Starting Bitcanna-Cosmos Service"
+  fi
  else 
-  erro "Problem Starting Bitcanna-Cosmos Service"
+  erro "Problem setting Bitcanna-Cosmos Service"
  fi
-else 
- erro "Problem setting Bitcanna-Cosmos Service"
 fi
-clear
+read -n 1 -s -r -p "$(info "Press any key to continue...")"
 syncr
 info "Lets Check Syncronization again"
 sleep 2
@@ -187,14 +197,15 @@ read -n 1 -s -r -p "$(info "Press any key to continue...")"
 
 function syncr(){
 info "Syncronizing with Blockchain"
-NEEDED="420" ; while [ "$NEEDED" -gt "4" ]
+NEEDED="420"
+while [ "$NEEDED" -gt "4" ]
 do 
-clear
+#clear
 bcnatimer
 warn "!!! PLEASE WAIT TO FULL SYNCRONIZATION !!!"
 NODEBLOCK=$(curl -s localhost:26657/status | jq .result.sync_info.latest_block_height | tr -d '"')
 CHAINBLOCK=$(curl -s "http://seed1.bitcanna.io:26657/status?"  | jq .result.sync_info.latest_block_height | tr -d '"')
-NEEDED=$(("$CHAINBLOCK" - "$NODEBLOCK"))
+NEEDED="$(("$CHAINBLOCK" - "$NODEBLOCK"))"
 info "Remains: $NEEDED Blocks to full syncronization"
 sleep 7
 done
@@ -265,7 +276,7 @@ if "$BCNAD" tx staking create-validator \
 --commission-max-change-rate 0.10 \
 --commission-max-rate 0.2 \
 --commission-rate 0.1 \
---from "$MYWALLETADDR" \
+--from "$WALLETNAME" \
 --min-self-delegation 1 \
 --moniker "$MONIKER" \
 --pubkey "$($BCNAD tendermint show-validator)" \
@@ -306,11 +317,12 @@ read -n 1 -s -r -p "$(info "Press any key to continue...")"
 ###############
 ###  Start  ###
 ###############
-intro && sleep 5
 if [ -z "$MONIKER" ]; then
  erro "Set MONIKER on CONFIG file ..."
 fi
- 
+if [ -z "$WALLETNAME" ]; then
+ erro "Set WALLETNAME on CONFIG file ..."
+fi
 if bash CheckSystem.sh ; then
  true
 else
