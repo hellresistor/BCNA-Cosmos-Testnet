@@ -22,7 +22,8 @@ else
  warn "Not Exist a Old $BCNADIR to be backeuped"
 fi
 if wget "$BCNACOSMOSLINK" -P /tmp > /dev/null 2>&1 ; then 
- sudo chmod +x /tmp/"$BCNAD" && /tmp/"$BCNAD" version || erro "Cannot check bcna version"
+ sudo chmod +x /tmp/"$BCNAD"
+ /tmp/"$BCNAD" version || erro "Cannot check bcna version"
  sleep 2
  ok "Latest Bitcanna-Cosmos Downloaded"
 else
@@ -213,8 +214,8 @@ done
 
 function backup(){
 info "Backup Validator keys"
-cd "$BCNACONF"
-if tar -czf "$BCNAUSERHOME"/BCNABACKUP/validator_key.tar.gz *_key.json  ; then
+cd "$BCNACONF" || warn "Cannot access to .config file"
+if tar -czf "$BCNAUSERHOME"/BCNABACKUP/validator_key.tar.gz ./*_key.json  ; then
  ok "*_key.json files Compressed"
  if gpg -o "$BCNAUSERHOME"/BCNABACKUP/validator_key.tar.gz.gpg -ca "$BCNAUSERHOME"/BCNABACKUP/validator_key.tar.gz ; then
   ok "Keys saved and encrypted on $BCNAUSERHOME/BCNABACKUP/validator_key.tar.gz.gpg"
@@ -225,7 +226,7 @@ if tar -czf "$BCNAUSERHOME"/BCNABACKUP/validator_key.tar.gz *_key.json  ; then
 else
  warn "*_key.json files NOT Compressed"
 fi
-cd -
+cd - || warn "Cannot access to .config file"
 info "Backup Wallet Keys..."
 if "$BCNAD" keys export "$WALLETNAME" ; then
  ok "$WALLETNAME wallet Keys exported"
