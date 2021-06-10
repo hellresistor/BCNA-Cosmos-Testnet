@@ -1,5 +1,5 @@
 [![made-with-bash](https://img.shields.io/badge/Made%20with-Bash-1f425f.svg)](https://www.gnu.org/software/bash/)
-[![LintCheck](https://github.com/hellresistor/Bitcanna-Cosmos-Testnet/actions/workflows/main.yml/badge.svg)](https://github.com/hellresistor/Bitcanna-Cosmos-Testnet/actions/workflows/main.yml)
+[![ShellLinter](https://github.com/hellresistor/BCNA-Cosmos-Testnet/actions/workflows/main.yml/badge.svg)](https://github.com/hellresistor/BCNA-Cosmos-Testnet/actions/workflows/main.yml)
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](http://perso.crans.org/besson/LICENSE.html)
 
 # Bitcanna-Cosmos Scripts (testnet)
@@ -13,7 +13,7 @@ ToDO:
  - Stage 2 - Soon ...
  - Soon ...
 
-# STATUS: *V0.06*
+# STATUS: *V0.62*
  - CONFIG -> Place with variables
  - CheckRequisites.sh -> Script to install needed packages to run wallet
  - CheckSytem.sh -> Script to Check hardware minimum requisites
