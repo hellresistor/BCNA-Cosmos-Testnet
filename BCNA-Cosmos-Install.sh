@@ -5,7 +5,7 @@
 #                                                   #   
 #---------------------------------------------------#
 #---------------------------------------------------#
-#                  Version: V0.63                   #
+#                  Version: V0.64                   #
 #             Donate BitCanna Address:              #
 #    --> B73RRFVtndfPRNSgSQg34yqz4e9eWyKRSv <--     #
 #---------------------------------------------------#
@@ -200,7 +200,7 @@ info "Syncronizing with Blockchain"
 NEEDED="420"
 while [ "$NEEDED" -gt "4" ]
 do 
-#clear
+clear
 bcnatimer
 warn "!!! PLEASE WAIT TO FULL SYNCRONIZATION !!!"
 NODEBLOCK=$(curl -s localhost:26657/status | jq .result.sync_info.latest_block_height | tr -d '"')
@@ -212,18 +212,25 @@ done
 }
 
 function backup(){
-tar -czvf "$BCNAUSERHOME"/BCNABACKUP/validator_key.tar.gz "$BCNACONF"/*_key.json 
-if gpg -o "$BCNAUSERHOME"/BCNABACKUP/validator_key.tar.gz.gpg -ca "$BCNAUSERHOME"/BCNABACKUP/validator_key.tar.gz ; then
- ok "Keys saved and encrypted on $BCNAUSERHOME/BCNABACKUP/validator_key.tar.gz.gpg"
+info "Backup Validator keys"
+cd "$BCNACONF"
+if tar -czf "$BCNAUSERHOME"/BCNABACKUP/validator_key.tar.gz *_key.json  ; then
+ ok "*_key.json files Compressed"
+ if gpg -o "$BCNAUSERHOME"/BCNABACKUP/validator_key.tar.gz.gpg -ca "$BCNAUSERHOME"/BCNABACKUP/validator_key.tar.gz ; then
+  ok "Keys saved and encrypted on $BCNAUSERHOME/BCNABACKUP/validator_key.tar.gz.gpg"
+ else
+  warn "FAILED Backing Up the KEYS! DO IT MANUALLY" 
+ fi
+ rm "$BCNAUSERHOME"/BCNABACKUP/validator_key.tar.gz
 else
- warn "FAILED Backing Up the KEYS! DO IT MANUALLY" 
+ warn "*_key.json files NOT Compressed"
 fi
-rm "$BCNAUSERHOME"/BCNABACKUP/validator_key.tar.gz
-
-if "$BCNAD" keys export "$MONIKER" ; then
- ok "$MONIKER wallet Keys exported"
+cd -
+info "Backup Wallet Keys..."
+if "$BCNAD" keys export "$WALLETNAME" ; then
+ ok "$WALLETNAME wallet Keys exported"
 else 
- warn "Unable export Keys from wallet $MONIKER. Do it manually"
+ warn "Unable export Keys from wallet $WALLETNAME. Do it manually"
 fi
 }
 
@@ -312,6 +319,101 @@ info " Check my friend @atmon3r repository on GitHub and get the code"
 info " https://github.com/atmoner/cosmos-tool.git"
 info " Use and improove :)"
 read -n 1 -s -r -p "$(info "Press any key to continue...")"
+}
+
+function recoveryzone(){
+while true
+do
+info "What you want recover?:
+\n\t W - Wallet 
+\n\t V - Validator 
+\n\t N - NOT Recover. Create a NEW wallet"
+read -r reczone
+case "$reczone" in
+	w|W) walletrec ;; #		break ;;
+	v|V) validatorec ;; #		break ;;
+	n|N) info "Creating a NEW Wallet" && break ;;
+	*) warn "Missed key" ;;
+esac
+done
+}
+function walletrec(){
+while true
+do
+info "Choose method to recover your wallet:
+\n\t K - by PrivKey file 
+\n\t S - by Seed 
+\n\t N - NOT Recover"
+read -r recwallet
+case "$recwallet" in
+    k|K) info "Set Your *.key file [keyfile_wallet_resources.key]:"
+		 read -r keyfile
+		 keyfile=${keyfile:-keyfile_wallet_resources.key}
+		 info "Detecting $keyfile file..."
+		 sleep 0.5
+	     while [ ! -f "$BCNAUSERHOME"/"$keyfile" ]
+         do		 
+		  warn "$keyfile not found...\n Please, put $keyfile on this directory: $BCNAUSERHOME/$keyfile"
+		  read -n 1 -s -r -p "$(info "Press any key to continue ... ")"
+         done
+         ok "$keyfile FOUND in $BCNAUSERHOME Directory..."
+		 "$BCNAD" keys import "$WALLETNAME" "$keyfile"
+		 sleep 0.5
+         # WALLETEXIST=1
+         break ;;
+    s|S) info "Put your Wallet Name to Recovery :"
+	     read -r WALLETNAME
+		 "$BCNAD" keys add "$WALLETNAME" --recover
+         # WALLETEXIST=0
+	     break ;;
+	n|N) info "Not Recovery" && break ;;
+    *) warn "Missed key" ;;
+esac
+done
+}
+function validatorec(){
+while true
+do
+info "Choose method to recover your Validator:
+\n\t J - by *.tar.gz  
+\n\t G - by *.tar.gz.gpg (GPG Encryption method) 
+\n\t N - NOT Recover"
+read -r recwallet
+case "$recwallet" in
+    j|J) info "Set Your *.tar.gz file [validator_key.tar.gz]:"
+		 read -r keyfile
+		 keyfile=${keyfile:-validator_key.tar.gz}
+		 info "Detecting $keyfile file..."
+		 sleep 0.5
+	     while [ ! -f "$BCNAUSERHOME"/"$keyfile" ]
+         do		 
+		  warn "$keyfile not found...\n Please, put $keyfile on this directory: $BCNAUSERHOME/$keyfile"
+		  read -n 1 -s -r -p "$(info "Press any key to continue ... ")"
+         done
+         ok "$keyfile FOUND in $BCNAUSERHOME Directory..."
+		 tar xzvf "$BCNAUSERHOME"/"$keyfile" -C "$BCNACONF"
+		 sleep 0.5
+         # WALLETEXIST=1
+         break ;;
+    g|G) info "Set Your *.tar.gz.gpg GPG Encrypted file [validator_key.tar.gz.gpg]:"
+		 read -r keyfile
+		 keyfile=${keyfile:-validator_key.tar.gz.gpg}
+		 info "Detecting $keyfile file..."
+		 sleep 0.5
+	     while [ ! -f "$BCNAUSERHOME"/"$keyfile" ]
+         do		 
+		  warn "$keyfile not found...\n Please, put $keyfile on this directory: $BCNAUSERHOME/$keyfile"
+		  read -n 1 -s -r -p "$(info "Press any key to continue ... ")"
+         done
+         ok "$keyfile FOUND in $BCNAUSERHOME Directory..."
+		 gpg -d "$BCNAUSERHOME"/"$keyfile" | tar xzvf - -C "$BCNACONF"
+		 sleep 0.5
+         # WALLETEXIST=1
+         break ;;
+	n|N) info "Not Recovery" && break ;;
+    *) warn "Missed key" ;;
+esac
+done
 }
 
 ###############

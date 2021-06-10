@@ -26,6 +26,7 @@ for deppkgs in "${MYDEPPACKAGES[@]}" ; do
   fi
  fi
 done
+
 if grep -Fxq "fs.file-max = 65536" /etc/sysctl.conf ; then
  warn "fs.file-max good"
 else
@@ -33,8 +34,8 @@ else
   sudo sysctl -p
   ok "fs.file-max = 65536 defined"
  else
- erro "Unable set fs.file-max" 
- fi   # code if not found
+  erro "Unable set fs.file-max" 
+ fi
 fi
 
 
