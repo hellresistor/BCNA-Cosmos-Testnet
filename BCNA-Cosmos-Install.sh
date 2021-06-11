@@ -5,7 +5,7 @@
 #                                                   #   
 #---------------------------------------------------#
 #---------------------------------------------------#
-#                  Version: V0.65                   #
+#                  Version: V0.66                   #
 #             Donate BitCanna Address:              #
 #    --> B73RRFVtndfPRNSgSQg34yqz4e9eWyKRSv <--     #
 #---------------------------------------------------#
@@ -71,33 +71,41 @@ if [ "$choix" == "i" ] || [ "$choix" == "I" ]; then
   erro "Detected Bitcanna-Cosmos wallet already installed. Run Update or Remove"
  fi
 elif [ "$choix" == "u" ] || [ "$choix" == "U" ]; then 
-  info "Updating to last version of Bitcanna-Cosmos wallet"
+ info "Updating to last version of Bitcanna-Cosmos wallet"
  if [[ -a $(find "/usr/local/bin" -name "$BCNAD") ]] ; then
-   info "Old Bitcanna-Cosmos version found"
-   sudo systemctl stop "$BCNAD".service > /dev/null 2>&1 || warn "Bitcanna-Cosmos wallet is not Running"
-   sleep 5
-   sudo rm -f /usr/local/bin/"$BCNAD"
-   bitcannacosmosdownload
-   cleaner
-   ok "Bitcanna-Cosmos wallet Updated to LAST version"
-   if sudo systemctl start "$BCNAD".service ; then
-    ok "Bitcanna Wallet Started"
+  info "Old Bitcanna-Cosmos version found"
+  if sudo systemctl stop "$BCNAD".service > /dev/null 2>&1 ; then
+   ok "Bitcanna Wallet Started"
    else 
-	erro "Some Error on Starting Wallet. Check it Manually"
+    erro "Some Error on Starting Wallet. Check it Manually"
    fi
-  else
-   erro "Can not find Bitcanna-Cosmos wallet. Install It First"
+  sleep 5
+  sudo rm -f /usr/local/bin/"$BCNAD"
+  bitcannacosmosdownload
+  cleaner
+  ok "Bitcanna-Cosmos wallet Updated to LAST version"
+  if sudo systemctl start "$BCNAD".service > /dev/null 2>&1 ; then
+   ok "Bitcanna Wallet Started"
+  else 
+   erro "Some Error on Starting Wallet. Check it Manually"
   fi
+ else
+  erro "Can not find Bitcanna-Cosmos wallet. Install It First"
+ fi
 elif [ "$choix" == "r" ] || [ "$choix" == "R" ]; then 
  if [[ -a $(find "/usr/local/bin" -name "$BCNAD") ]] ; then
   info "Old Bitcanna-Cosmos version found"
   info "FULL REMOVING Bitcanna-Cosmos wallet"
-  sudo systemctl stop "$BCNAD".service
+  if sudo systemctl stop "$BCNAD".service > /dev/null 2>&1 ; then
+   ok "Bitcanna Wallet Started"
+  else 
+   erro "Some Error on Starting Wallet. Check it Manually"
+  fi
   sleep 5
-  cp -f -r --preserve "$BCNADIR" "$BCNAUSERHOME"/BCNABACKUP/.bcna."${DATENOW}"
+  cp -f -r --preserve "$BCNADIR" "$BCNAUSERHOME"/BCNABACKUP/.bcna."${DATENOW}" > /dev/null 2>&1 || erro "Cannot Copy $BCNADIR"
   cleaner
-  sudo rm -R "$BCNADIR"
-  sudo rm -f /usr/local/bin/"$BCNAD"
+  sudo rm -R "$BCNADIR" > /dev/null 2>&1 || erro "Cannot Delete $BCNADIR"
+  sudo rm -f /usr/local/bin/"$BCNAD" > /dev/null 2>&1 || erro "Cannot Delete $BCNAD"
   ok "Bitcanna-Cosmos wallet was FULLY Removed"
  else
    erro "Bitcanna-Cosmos wallet not exist\nInstall it\n"
@@ -116,10 +124,7 @@ sudo rm -r /tmp/*  > /dev/null 2>&1 && ok "/tmp folder cleaned"
 function SettingConnection(){
 while true
 do
-info "Choose method to recover your wallet:
-\n\t K - by PrivKey file 
-\n\t S - by Seed 
-\n\t C - Create New Wallet"
+info "Choose method to recover your wallet:\n\t K - by PrivKey file\n\t S - by Seed\n\t C - Create New Wallet"
 read -r recwallet
 case "$recwallet" in
     k|K) info "Set Your *.key file [keyfile_wallet_resources.key]:"
@@ -135,12 +140,10 @@ case "$recwallet" in
          ok "$keyfile FOUND in $BCNAUSERHOME Directory..."
 		 "$BCNAD" keys import "$WALLETNAME" "$keyfile"
 		 sleep 0.5
-         # WALLETEXIST=1
          break ;;
     s|S) info "Put your Wallet Name to Recovery :"
 	     read -r WALLETNAME
 		 "$BCNAD" keys add "$WALLETNAME" --recover
-         # WALLETEXIST=0
 	     break ;;
 	c|C) info "Creating New Wallet"
 	     WALLETPASS="dummy1"
@@ -169,12 +172,9 @@ esac
 done
 while true
 do
-info "Choose method to recover your Validator:
-\n\t J - by *.tar.gz  
-\n\t G - by *.tar.gz.gpg (GPG Encryption method) 
-\n\t C - Create New Moniker"
-read -r recwallet
-case "$recwallet" in
+info "Choose to get New MONIKER or to REVOCER your MONIKER:\n\t J - by *.tar.gz\n\t G - by *.tar.gz.gpg (GPG Encryption method)\n\t C - Create New Moniker"
+read -r recvalidator
+case "$recvalidator" in
     j|J) info "Set Your *.tar.gz file [validator_key.tar.gz]:"
 		 read -r keyfile
 		 keyfile=${keyfile:-validator_key.tar.gz}
@@ -188,7 +188,6 @@ case "$recwallet" in
          ok "$keyfile FOUND in $BCNAUSERHOME Directory..."
 		 tar xzvf "$BCNAUSERHOME"/"$keyfile" -C "$BCNACONF"
 		 sleep 0.5
-         # WALLETEXIST=1
          break ;;
     g|G) info "Set Your *.tar.gz.gpg GPG Encrypted file [validator_key.tar.gz.gpg]:"
 		 read -r keyfile
@@ -203,7 +202,6 @@ case "$recwallet" in
          ok "$keyfile FOUND in $BCNAUSERHOME Directory..."
 		 gpg -d "$BCNAUSERHOME"/"$keyfile" | tar xzvf - -C "$BCNACONF"
 		 sleep 0.5
-         # WALLETEXIST=1
          break ;;
 	c|C) info "Creating New MONIKER" 
 		 if "$BCNAD" init "$MONIKER" --chain-id "$CHAINID" |& tee -a "$BCNAUSERHOME"/BCNABACKUP/"$MONIKER".moniker.info ; then 
@@ -263,7 +261,6 @@ WantedBy=multi-user.target
   erro "Problem setting Bitcanna-Cosmos Service"
  fi
 fi
-read -n 1 -s -r -p "$(info "Press any key to continue...")"
 syncr
 info "Lets Check Syncronization again"
 sleep 2
