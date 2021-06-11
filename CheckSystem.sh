@@ -38,10 +38,19 @@ else
 fi
 
 ## Storage avaliable Checking ...
-DISKSIZE=$(df | grep '^/dev/vda1' | awk '{s+=$2} END {print s/1048576}')
-DISKSIZEREDUCT=${DISKSIZE%.*}
-if [[ "$DISKSIZEREDUCT" -ge 20 ]] ; then
- ok ">= 20 GB"
+DISKTYPE=$(lsblk -d | tail -n+2 | awk '{print $1}')
+if [[ $DISKTYPE == *"sda"* ]]; then
+ DISKSIZE=$(df | grep '^/dev/sda1' | awk '{s+=$2} END {print s/1048576}')
+elif [[ $DISKTYPE == *"vda"* ]]; then
+ DISKSIZE=$(df | grep '^/dev/vda1' | awk '{s+=$2} END {print s/1048576}')
+elif [[ $DISKTYPE == *"hda"* ]]; then
+ DISKSIZE=$(df | grep '^/dev/hda1' | awk '{s+=$2} END {print s/1048576}')
 else
- erro "< 20 GB, Upgrade more"
+ erro "Invalid Disk Type: $DISKTYPE"
+fi
+DISKSIZEREDUCT=${DISKSIZE%.*}
+if [[ "$DISKSIZEREDUCT" -ge 80 ]] ; then
+ ok ">= 80 GB"
+else
+ erro "< 80 GB, Upgrade more"
 fi
