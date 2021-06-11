@@ -80,7 +80,11 @@ elif [ "$choix" == "u" ] || [ "$choix" == "U" ]; then
    bitcannacosmosdownload
    cleaner
    ok "Bitcanna-Cosmos wallet Updated to LAST version"
-   info "To start wallet run: $BCNAD start"
+   if sudo systemctl start "$BCNAD".service ; then
+    ok "Bitcanna Wallet Started"
+   else 
+	erro "Some Error on Starting Wallet. Check it Manually"
+   fi
   else
    erro "Can not find Bitcanna-Cosmos wallet. Install It First"
   fi
