@@ -61,7 +61,7 @@ info "Welcome!\nChoose:\n(I)nstall , (U)pdate , (R)emove :"
 read -r choix
 if [ "$choix" == "i" ] || [ "$choix" == "I" ]; then 
  info "New and Clean installation of Bitcanna-Cosmos wallet"
- if [[ ! -a $(find "/usr/bin" -name "$BCNAD") ]] ; then
+ if [[ ! -a $(find "/usr/local/bin" -name "$BCNAD") ]] ; then
   bitcannacosmosdownload
   SettingConnection
   StageOne
@@ -72,9 +72,9 @@ if [ "$choix" == "i" ] || [ "$choix" == "I" ]; then
  fi
 elif [ "$choix" == "u" ] || [ "$choix" == "U" ]; then 
   info "Updating to last version of Bitcanna-Cosmos wallet"
- if [[ -a $(find "/usr/bin" -name "$BCNAD") ]] ; then
+ if [[ -a $(find "/usr/local/bin" -name "$BCNAD") ]] ; then
    info "Old Bitcanna-Cosmos version found"
-   sudo service stop "$BCNAD".service > /dev/null 2>&1 || warn "Bitcanna-Cosmos wallet is not Running"
+   sudo systemctl stop "$BCNAD".service > /dev/null 2>&1 || warn "Bitcanna-Cosmos wallet is not Running"
 ##   sleep 5
    sudo rm -f /usr/local/bin/"$BCNAD"
    bitcannacosmosdownload
@@ -85,11 +85,11 @@ elif [ "$choix" == "u" ] || [ "$choix" == "U" ]; then
    erro "Can not find Bitcanna-Cosmos wallet. Install It First"
   fi
 elif [ "$choix" == "r" ] || [ "$choix" == "R" ]; then 
- if [[ -a $(find "/usr/bin" -name "$BCNAD") ]] ; then
+ if [[ -a $(find "/usr/local/bin" -name "$BCNAD") ]] ; then
   info "Old Bitcanna-Cosmos version found"
   info "FULL REMOVING Bitcanna-Cosmos wallet"
-##  "$BCNACLI" stop > /dev/null 2>&1 || warn "Bitcanna-Cosmos Wallet is not Running"
-##  sleep 5
+  sudo systemctl stop "$BCNAD".service
+  sleep 5
   cp -f -r --preserve "$BCNADIR" "$BCNAUSERHOME"/BCNABACKUP/.bcna."${DATENOW}"
   cleaner
   sudo rm -R "$BCNADIR"
