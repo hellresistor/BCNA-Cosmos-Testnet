@@ -75,7 +75,7 @@ elif [ "$choix" == "u" ] || [ "$choix" == "U" ]; then
  if [[ -a $(find "/usr/local/bin" -name "$BCNAD") ]] ; then
    info "Old Bitcanna-Cosmos version found"
    sudo systemctl stop "$BCNAD".service > /dev/null 2>&1 || warn "Bitcanna-Cosmos wallet is not Running"
-##   sleep 5
+   sleep 5
    sudo rm -f /usr/local/bin/"$BCNAD"
    bitcannacosmosdownload
    cleaner
@@ -395,7 +395,7 @@ fi
 function delegatecoins(){
 info " Check my friend @atmon3r repository on GitHub and get the code"
 info " https://github.com/atmoner/cosmos-tool.git"
-info " Use and improove :)"
+info " Use, abuse and improove :)"
 read -n 1 -s -r -p "$(info "Press any key to continue...")"
 }
 
