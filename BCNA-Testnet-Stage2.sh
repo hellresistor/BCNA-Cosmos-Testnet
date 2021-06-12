@@ -27,10 +27,10 @@ fi
 
 if sudo systemctl is-active "$BCNAD".service ; then
  sudo systemctl stop "$BCNAD"
- sudo systemctl disable "$BCNAD" ; then
+ sudo systemctl disable "$BCNAD"
  ok "$BCNAD Stopped and Disabled"
 else
- sudo systemctl disable "$BCNAD" ; then
+ sudo systemctl disable "$BCNAD"
  warn "$BCNAD.service already stopped"
 fi
 
