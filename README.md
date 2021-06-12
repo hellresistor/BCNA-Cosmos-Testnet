@@ -4,7 +4,7 @@
 
 # Bitcanna-Cosmos Scripts (testnet)
 
-This is build for Bitcanna-Cosmos Testnet!
+This is build for Bitcanna-Cosmos Testnet - Stage 2!
 
 This script will be progressivly updated and upgraded .
 
@@ -12,19 +12,14 @@ ToDO:
  - Stage 2 - On Demand  ...
  - Soon ...
 
-# STATUS: *V1.00*
- - BCNA-Cosmos-Install.sh -> Script to Install/Upgrade/Remove Bitcanna-Cosmos Wallet
- - CONFIG -> Place with variables
- - CheckRequisites.sh -> Script to install needed packages to run wallet
- - CheckSytem.sh -> Script to Check hardware minimum requisites
+# STATUS: *V1.01*
+ - BCNA-Testnet-Stage2.sh -> Script to Continue on Bitcanna-Cosmos Testnet-Stage2
 
 # Testing On:
  - Ubuntu Server 20.04
 
 # Run as normal User (NOT ROOT):
-    git clone https://github.com/hellresistor/BCNA-Cosmos-Testnet.git
-    chmod -R +x BCNA-Cosmos-Testnet && cd "$PWD"/BCNA-Cosmos-Testnet
-    bash BCNA-Cosmos-Install.sh
+    bash BCNA-Testnet-Stage2.sh
 
 
 # Support donating:
