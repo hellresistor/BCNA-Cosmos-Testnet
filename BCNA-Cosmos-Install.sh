@@ -220,11 +220,13 @@ else
  erro "genesis.json file NOT moved to $BCNAUSERHOME/$BCNACONF/genesis.json"
 fi
 sed -E -i "s/seeds = \".*\"/seeds = \"$SEEDS\"/" "$BCNACONF"/config.toml
-sed -E -i "s/persistent_peers = \".*\"/persistent_peers = \"$PERSISTPEERS\"/" "$BCNACONF"/config.toml
 sed -E -i "s/minimum-gas-prices = \".*\"/minimum-gas-prices = \"0.01ubcna\"/" "$BCNACONF"/app.toml
-#info "Setting DDOS Protection (Sentry Nodes)"
-# sed -i "s/private_peer_ids = \"\"/private_peer_ids = \"$PRIVATPEERID\"/" "$BCNACONF"/config.toml
-# sed -i "s/pex = true/pex = false/" "$BCNACONF"/config.toml
+
+info "Setting DDOS Protection (Validator Sentry Node)"
+sed -E -i "s/persistent_peers = \".*\"/persistent_peers = \"$PERSISTPEERS\"/" "$BCNACONF"/config.toml
+sed -E -i "/private_peer_ids =/ s/^#*/#/" "$BCNACONF"/config.toml
+sed -E -i "s/pex = true/pex = false/" "$BCNACONF"/config.toml
+sed -E -i "s/addr_book_strict = true/addr_book_strict = false/" "$BCNACONF"/config.toml
 
 if sudo systemctl is-active ufw > /dev/null; then
  ok "ufw Active"
