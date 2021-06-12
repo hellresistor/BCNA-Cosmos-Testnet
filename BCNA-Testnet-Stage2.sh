@@ -35,25 +35,41 @@ curl -s https://raw.githubusercontent.com/BitCannaGlobal/testnet-bcna-cosmos/mai
 
 MYWALLETADDR=$($BCNAD keys show "$WALLETNAME" -a)
 
+info "Adding Genesis account"
 if "$BCNAD" add-genesis-account "$($BCNAD keys show $WALLETNAME -a)" 100000000000ubcna ; then
  ok "Genesis Account Added with Success"
 else
  erro "Genesis Account Added with Success"
 fi
-
+info "Generating Own genesis.json"
 if "$BCNAD" gentx "$WALLETNAME" 90000000000ubcna --moniker "$MONIKER" --chain-id "$CHAINID" -y ; then
  ok "genesis.json generated"
 else
  erro "genesis.json NOT generated"
 fi
-
 info "Setting DDOS Protection for Validator (with Sentry Nodes)"
-sed -E -i "s/persistent_peers = \".*\"/persistent_peers = \"$PERSISTPEERS\"/" "$BCNACONF"/config.toml
-sed -E -i "/private_peer_ids =/ s/^#*/#/" "$BCNACONF"/config.toml
-sed -E -i "s/pex = true/pex = false/" "$BCNACONF"/config.toml
-sed -E -i "s/addr_book_strict = true/addr_book_strict = false/" "$BCNACONF"/config.toml
+if sed -E -i "s/persistent_peers = \".*\"/persistent_peers = \"$PERSISTPEERS\"/" "$BCNACONF"/config.toml ; then
+ ok "persistent_peers written on $BCNACONF/config.toml"
+else
+ warn "persistent_peers NOT written on $BCNACONF/config.toml. Chack it Manually"
+fi
+if sed -E -i "/private_peer_ids =/ s/^#*/#/" "$BCNACONF"/config.toml ; then
+ ok "private_peer_ids written on $BCNACONF/config.toml"
+else
+ warn "private_peer_ids NOT written on $BCNACONF/config.toml. Chack it Manually"
+fi
+if sed -E -i "s/pex = true/pex = false/" "$BCNACONF"/config.toml ; then
+ ok "pex written on $BCNACONF/config.toml"
+else
+ warn "pex NOT written on $BCNACONF/config.toml. Chack it Manually"
+fi
+if sed -E -i "s/addr_book_strict = true/addr_book_strict = false/" "$BCNACONF"/config.toml ; then
+ ok "addr_book_strict written on $BCNACONF/config.toml"
+else
+ warn "addr_book_strict NOT written on $BCNACONF/config.toml. Chack it Manually"
+fi
 
-info "$(ls -la "$BCNACONF"/gentx/ | tail -n1 | awk '{print $9}')"
+info "Your file are located on this directory: $(ls -la "$BCNACONF"/gentx/ | tail -n1 | awk '{print $9}')"
 warn "TIME TO SEND YOUR GENERATED .json file to Network knack"
 sleep 1
 warn "TIME TO SEND YOUR GENERATED .json file to Network knack"
