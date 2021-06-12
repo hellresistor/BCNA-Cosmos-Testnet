@@ -9,7 +9,7 @@ WALLETNAME=""
 ## For Stage2 - testnet-3
 CHAINID="bitcanna-testnet-3"
 
-# Validator Sentry Nodes IPs
+## Sentry Nodes IDS # W8ing about new valid peers
 PERSISTPEERS="d6aa4c9f3ccecb0cc52109a95962b4618d69dd3f@seed1.bitcanna.io:26656,41d373d03f93a3dc883ba4c1b9b7a781ead53d76@seed2.bitcanna.io:16656" # Comma separated values Ex: 123,123,123,123
 
 BCNACOSMOSREP="testnet-bcna-cosmos"
