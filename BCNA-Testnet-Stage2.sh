@@ -36,7 +36,7 @@ curl -s https://raw.githubusercontent.com/BitCannaGlobal/testnet-bcna-cosmos/mai
 MYWALLETADDR=$($BCNAD keys show "$WALLETNAME" -a)
 
 info "Adding Genesis account"
-if "$BCNAD" add-genesis-account "$($BCNAD keys show $WALLETNAME -a)" 100000000000ubcna ; then
+if "$BCNAD" add-genesis-account "$("$BCNAD" keys show "$WALLETNAME" -a)" 100000000000ubcna ; then
  ok "Genesis Account Added with Success"
 else
  erro "Genesis Account Added with Success"
@@ -69,7 +69,7 @@ else
  warn "addr_book_strict NOT written on $BCNACONF/config.toml. Chack it Manually"
 fi
 
-info "Your file are located on this directory: $(ls -la "$BCNACONF"/gentx/ | tail -n1 | awk '{print $9}')"
+info "Your file are located on this directory: $(find "$BCNACONF"/gentx/ | tail -n1 )"
 warn "TIME TO SEND YOUR GENERATED .json file to Network knack"
 sleep 1
 warn "TIME TO SEND YOUR GENERATED .json file to Network knack"
