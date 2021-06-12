@@ -225,6 +225,18 @@ sed -E -i "s/minimum-gas-prices = \".*\"/minimum-gas-prices = \"0.01ubcna\"/" "$
 #info "Setting DDOS Protection (Sentry Nodes)"
 # sed -i "s/private_peer_ids = \"\"/private_peer_ids = \"$PRIVATPEERID\"/" "$BCNACONF"/config.toml
 # sed -i "s/pex = true/pex = false/" "$BCNACONF"/config.toml
+
+if sudo systemctl is-active ufw > /dev/null; then
+ ok "ufw Active"
+else
+ info "Enabling ufw"
+ if sudo ufw enable ; then
+  ok "ufw Active"
+ else 
+  warn "Firewall not enabled. Do a manual check."
+ fi
+ sudo ufw allow ssh || warn "SSH Port not allowed"
+fi
 if sudo ufw allow "$BCNAPORT" ; then
  ok "Firewall configured on port: $BCNAPORT"
 else 
