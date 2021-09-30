@@ -2,7 +2,7 @@
 [![ShellLinter](https://github.com/hellresistor/BCNA-Cosmos-Testnet/actions/workflows/main.yml/badge.svg)](https://github.com/hellresistor/BCNA-Cosmos-Testnet/actions/workflows/main.yml)
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](http://perso.crans.org/besson/LICENSE.html)
 
-# Bitcanna-Cosmos Scripts (testnet)
+# Bitcanna-Cosmos Scripts (testnet) - DEPRECATED - check [THIS REPOSITORY](https://github.com/hellresistor/CosmoCanna.git)
 
 This is build for Bitcanna-Cosmos Testnet!
 
